@@ -25,36 +25,9 @@ public class MemberController {
 
     @GetMapping("/members")
     public ResponseEntity<List<Member>> list(HttpServletRequest request) {
-        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+        List<Member> members = memberRepository.findAll();
 
-        String[] split = authorization.split(" ");
-        String type = split[0];
-        String credential = split[1];
-
-        if (!type.equalsIgnoreCase("Basic"))
-            throw new AuthenticationException();
-
-        try {
-
-            String dcodedString = new String(Base64Utils.decodeFromString(credential));
-
-            String[] token = dcodedString.split(":");
-
-            String username = token[0];
-            String password = token[1];
-
-            Member member = memberRepository.findByEmail(username)
-                    .orElseThrow(AuthenticationException::new);
-
-            if (!member.getPassword().equals(password))
-                throw new AuthenticationException("비밀번호가 일치하지 않습니다.");
-
-            List<Member> members = memberRepository.findAll();
-
-            return ResponseEntity.ok(members);
-        } catch (Exception e){
-            throw new AuthenticationException();
-        }
+        return ResponseEntity.ok(members);
     }
 
     @ExceptionHandler(AuthenticationException.class)
